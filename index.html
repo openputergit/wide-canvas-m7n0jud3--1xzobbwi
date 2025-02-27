@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WideCanvas - Website Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .editor-container { min-height: 500px; }
+        .chatbot-container { height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-cyan-600">WideCanvas</h1>
+                <button id="previewBtn" class="bg-cyan-600 text-white px-4 py-2 rounded-md hover:bg-cyan-700">Preview</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Components Panel -->
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4">Components</h2>
+                <div class="space-y-3">
+                    <button class="component-btn w-full text-left p-2 hover:bg-gray-100 rounded" data-type="header">
+                        <i class="bi bi-type-h1"></i> Header
+                    </button>
+                    <button class="component-btn w-full text-left p-2 hover:bg-gray-100 rounded" data-type="text">
+                        <i class="bi bi-text-paragraph"></i> Text Block
+                    </button>
+                    <button class="component-btn w-full text-left p-2 hover:bg-gray-100 rounded" data-type="image">
+                        <i class="bi bi-image"></i> Image
+                    </button>
+                    <button class="component-btn w-full text-left p-2 hover:bg-gray-100 rounded" data-type="button">
+                        <i class="bi bi-square"></i> Button
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor Area -->
+            <div class="lg:col-span-2">
+                <div id="editor" class="bg-white p-4 rounded-lg shadow editor-container">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg h-full flex items-center justify-center">
+                        <p class="text-gray-500">Drag and drop components here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chatbot -->
+        <div class="fixed bottom-4 right-4 w-80">
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="p-4 bg-cyan-600 text-white rounded-t-lg flex justify-between items-center">
+                    <span>AI Assistant</span>
+                    <button id="toggleChat" class="text-white hover:text-gray-200">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                </div>
+                <div id="chatContent" class="hidden">
+                    <div id="chatMessages" class="p-4 chatbot-container"></div>
+                    <div class="p-4 border-t">
+                        <div class="flex gap-2">
+                            <input type="text" id="chatInput" class="flex-1 border rounded-md px-3 py-2" placeholder="Type your message...">
+                            <button id="sendMessage" class="bg-cyan-600 text-white px-4 py-2 rounded-md hover:bg-cyan-700">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // Website Builder Logic
+        const editor = document.getElementById('editor');
+        const componentButtons = document.querySelectorAll('.component-btn');
+        
+        componentButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                addComponent(type);
+            });
+        });
+
+        function addComponent(type) {
+            const component = document.createElement('div');
+            component.className = 'p-4 mb-4 border rounded-lg';
+            
+            switch(type) {
+                case 'header':
+                    component.innerHTML = `
+                        <h2 contenteditable="true" class="text-2xl font-bold">Header Text</h2>
+                        <button class="delete-btn text-red-500 mt-2"><i class="bi bi-trash"></i></button>
+                    `;
+                    break;
+                case 'text':
+                    component.innerHTML = `
+                        <p contenteditable="true">Enter your text here...</p>
+                        <button class="delete-btn text-red-500 mt-2"><i class="bi bi-trash"></i></button>
+                    `;
+                    break;
+                case 'image':
+                    component.innerHTML = `
+                        <div class="text-center">
+                            <img src="https://via.placeholder.com/300" class="max-w-full h-auto">
+                            <input type="text" placeholder="Enter image URL" class="mt-2 border p-2 w-full">
+                            <button class="delete-btn text-red-500 mt-2"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                    break;
+                case 'button':
+                    component.innerHTML = `
+                        <button contenteditable="true" class="bg-blue-500 text-white px-4 py-2 rounded">Button</button>
+                        <button class="delete-btn text-red-500 mt-2"><i class="bi bi-trash"></i></button>
+                    `;
+                    break;
+            }
+
+            if (editor.firstElementChild.classList.contains('border-dashed')) {
+                editor.innerHTML = '';
+            }
+            editor.appendChild(component);
+
+            // Add delete functionality
+            component.querySelector('.delete-btn').addEventListener('click', () => {
+                component.remove();
+                if (editor.children.length === 0) {
+                    editor.innerHTML = `
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg h-full flex items-center justify-center">
+                            <p class="text-gray-500">Drag and drop components here</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // Chatbot Logic
+        const toggleChat = document.getElementById('toggleChat');
+        const chatContent = document.getElementById('chatContent');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendMessage = document.getElementById('sendMessage');
+
+        toggleChat.addEventListener('click', () => {
+            chatContent.classList.toggle('hidden');
+            toggleChat.querySelector('i').classList.toggle('bi-chevron-up');
+            toggleChat.querySelector('i').classList.toggle('bi-chevron-down');
+        });
+
+        function addMessage(message, isUser = true) {
+            const msgElement = document.createElement('div');
+            msgElement.className = `mb-4 ${isUser ? 'text-right' : 'text-left'}`;
+            msgElement.innerHTML = `
+                <div class="${isUser ? 'bg-cyan-600 text-white' : 'bg-gray-200'} inline-block px-4 py-2 rounded-lg max-w-[80%]">
+                    ${message}
+                </div>
+            `;
+            chatMessages.appendChild(msgElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        sendMessage.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (message) {
+                addMessage(message);
+                chatInput.value = '';
+                
+                // Simple bot response
+                setTimeout(() => {
+                    addMessage("I'm here to help you build your website. What would you like to know?", false);
+                }, 1000);
+            }
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage.click();
+            }
+        });
+
+        // Preview functionality
+        document.getElementById('previewBtn').addEventListener('click', () => {
+            const previewWindow = window.open('', '_blank');
+            const content = editor.innerHTML;
+            previewWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <style>
+                        .delete-btn { display: none; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container mx-auto px-4 py-8">
+                        ${content}
+                    </div>
+                <script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+                </html>
